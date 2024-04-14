@@ -1,0 +1,41 @@
+body {
+    font-family: "Roboto", sans-serif;
+    font-style: normal;
+}
+
+h2 {
+    font-weight: 700;
+}
+
+#main-breadcrumb {
+
+    .breadcrumb-item {
+        font-size: 1.15rem;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline
+        }
+
+        & > .active {
+            font-weight: 700;
+        }
+
+        &:before {
+            font-weight: 400;
+        }
+    }
+}
+
+#btn-generate-teams{
+    font-weight: 500;
+}
+
+.team-table tbody {
+    tr td {
+        width: 120px;
+    }
+    tr td:nth-child(1) {
+        width: auto;
+    }
+}

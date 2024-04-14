@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>RSCM - TIC team generator</title>
+    <!--BOOTSTRAP-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="roboto-regular">
+<div id="app"></div>
+
+<header class="navbar bg-primary text-white py-4">
+    <div class="container">
+        <h1 id="logo">
+            RSCM - TIC team generator
+        </h1>
+    </div>
+</header>
+<div id="main-breadcrumb" class="navbar bg-light shadow mb-3 py-3">
+    <div class="container">
+        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item" data-step="1">Introduction</li>
+                <li class="breadcrumb-item" data-step="2">Configuration des équipes</li>
+                <li class="breadcrumb-item" data-step="3">Import des joueur.euse.s</li>
+                <li class="breadcrumb-item" data-step="4">Liste des joueur.euse.s</li>
+                <li class="breadcrumb-item" data-step="5">Générer les équipes</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<section class="pb-5">
+    <div class="container">
+
+        <div data-step="1" class="step d-none">
+            <h2>Générator d'équipes</h2>
+            <p>Site dédié à la création d'équipes équilibrées par niveau pour le RSCM Volley-Ball.</p>
+            <div class="row">
+                <div class="col col-auto">
+                    <button class="btn btn-md btn-primary px-5" id="btn-launch-continue">
+                        Reprendre la création d'équipe
+                    </button>
+                </div>
+                <div class="col col-auto">
+                    <button class="btn btn-md btn-danger px-5" id="btn-launch-new">
+                        Créer des nouvelles équipes
+                    </button>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col">
+                    <div class="alert alert-danger">
+                        <small>
+                            ⚠️ Attention, la création de nouvelles équipes effacera toutes les données précédentes
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div data-step="2" class="step d-none">
+            <form id="setup">
+                <h2>
+                    Configurer les équipes
+                </h2>
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="players_per_team" class="form-label">Nombre de joueur.euse.s par équipe</label>
+                            <input type="number" id="players_per_team" name="players_per_team" class="form-control"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="skill_range" class="form-label">Nombre de niveaux par joueur.euse.s</label>
+                            <input type="number" id="skill_range" name="skill_range" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Configurer</button>
+            </form>
+        </div>
+
+        <div data-step="3" class="step d-none">
+            <form id="import">
+                <h2>Importer des joueur.euse.s</h2>
+                <p>Pour importez des joueur.euse.s, utiliser le format suivant en séparant les colonnes par des
+                    virgules</p>
+                <pre class="bg-light py-2 px-3 rounded">Prénom Nom, L(loisir) ou C(compétition), niveau estimé</pre>
+                <div class="mb-3">
+                    <textarea name="players" rows="30" class="form-control"
+                              placeholder="Axel Gaillard, L, 1 &#10;Basilo el Magnifico, L, 10" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Importer</button>
+            </form>
+        </div>
+
+        <div data-step="4" class="step d-none">
+            <h2>Liste des joueur.euse.s</h2>
+            <div id="errorsWrapper">
+                <div class="alert alert-danger">
+                    <div class="row">
+                        <div class="col">
+                            <h3>Joueur.euse.s en erreur</h3>
+                        </div>
+                    </div>
+
+                    <div id="errors_list"></div>
+                </div>
+            </div>
+            <div class="alert">
+                <div class="row justify-content-between">
+                    <div class="col">
+                        <h3>Joueur.euse.s validé.e.s</h3>
+                    </div>
+                    <div class="col col-auto">
+                        <button id="resetPlayers" class="btn btn-danger text-white">Supprimer les joueur.euse.s</button>
+                    </div>
+                </div>
+                <div id="players_list"></div>
+            </div>
+            <div class="text-center">
+                <button class="btn btn-md btn-warning px-5 text-white" id="btn-validate-players">
+                    Valider les joueur.euse.s
+                </button>
+            </div>
+        </div>
+
+        <div data-step="5" class="step d-none">
+            <h2>Générer des équipes</h2>
+            <div class="row">
+                <div class="col">
+
+                    <table id="table-stats" class="table table-bordered">
+                        <thead class="table-warning">
+                        <tr>
+                            <th>
+                                Paramètres
+                            </th>
+                            <th>
+                                Valeur
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Nombre total de joueur.euse.s importé.e.s</td>
+                            <td data-stat="players-totalNumber"></td>
+                        </tr>
+                        <tr>
+                            <td>Nombre de joueur.euse.s par équipe</td>
+                            <td data-stat="config-teamCount"></td>
+                        </tr>
+                        <tr>
+                            <td>Niveau maximal par joueur.euse.s</td>
+                            <td data-stat="config-maxSkill"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="text-center py-4">
+                <button class="btn btn-md btn-warning px-5 text-white" id="btn-generate-teams">
+                    Générer des équipes
+                </button>
+            </div>
+            <div id="teams" class="mt-3"></div>
+        </div>
+    </div>
+</section>
+<!--JQUERY-->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<!--BOOTSTRAP-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+<!--COOKIES-->
+<script src="
+https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js
+"></script>
+<!--GOOGLE FONTS-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+      rel="stylesheet">
+<!--GRID JS -->
+<script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet"/>
+<!--SCRIPT-->
+<script src="index.js"></script>
+</body>
+</html>
