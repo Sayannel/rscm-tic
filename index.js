@@ -184,7 +184,6 @@ const getFormValues = (fieldNames) => {
 const removeSavedValues = (playerOnly = false) => {
     const numberOfPlayers = parseInt(Cookies.get('players_count'));
     for (let i = 0; i <= numberOfPlayers; i++) {
-        console.log('remove', `player-${i}`);
         Cookies.remove(`player-${i}`);
     }
     Cookies.remove('players_count');
