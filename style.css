@@ -7,10 +7,18 @@ h2 {
     font-weight: 700;
 }
 
+header {
+    background: #8C0000;
+}
+
+section {
+    min-height: calc(100vh - 242px);
+}
+
 #main-breadcrumb {
 
     .breadcrumb-item {
-        font-size: 1.15rem;
+        font-weight: 500;
         cursor: pointer;
 
         &:hover {
@@ -38,4 +46,14 @@ h2 {
     tr td:nth-child(1) {
         width: auto;
     }
+}
+
+#players_list table thead tr th {
+    background: #198754;
+    color: #fff;
+}
+
+#errors_list table thead tr th {
+    background: #dc3545;
+    color: #fff;
 }

@@ -29,6 +29,7 @@ const setStep = (stepNumber) => {
     if (stepNumber === 4) {
         updatePlayers();
         updateErrors();
+        $('#players_count').html(`${savedPlayers.length} joueur.euse.s`);
     }
 
     if (stepNumber === 5) {
@@ -294,7 +295,7 @@ const generateTeams = () => {
                 <div class="team-result accordion-item">
                     <h4 class="accordion-header">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#team-content-${teamGenerationTry}" aria-expanded="true" aria-controls="collapseOne">
-                         <strong>Essai #${teamGenerationTry}</strong>
+                         <strong>Génération #${teamGenerationTry}</strong>
                         </button>
                     </h4>
                     <div id="team-content-${teamGenerationTry}" class="accordion-collapse collapse show" data-bs-parent="#team-result-${teamGenerationTry}">
@@ -346,6 +347,7 @@ $(document).ready(() => {
     })
 
     $('#btn-generate-teams').on('click', () => {
+        $('#teams .accordion-collapse').removeClass('show');
         generateTeams();
     });
 

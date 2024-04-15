@@ -13,22 +13,24 @@
 <body class="roboto-regular">
 <div id="app"></div>
 
-<header class="navbar bg-primary text-white py-4">
+<header class="navbar text-white py-4">
     <div class="container">
-        <h1 id="logo">
-            RSCM - TIC team generator
-        </h1>
+        <div class="row">
+            <div class="col col-auto">
+                <img src="http://rscmvolleyball.free.fr/images/logo.png" alt="RSCM Volleyball" height="80px">
+            </div>
+        </div>
     </div>
 </header>
-<div id="main-breadcrumb" class="navbar bg-light shadow mb-3 py-3">
+<div id="main-breadcrumb" class="navbar bg-light mb-3 py-3 border-top border-bottom">
     <div class="container">
         <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item" data-step="1">Introduction</li>
-                <li class="breadcrumb-item" data-step="2">Configuration des équipes</li>
-                <li class="breadcrumb-item" data-step="3">Import des joueur.euse.s</li>
-                <li class="breadcrumb-item" data-step="4">Liste des joueur.euse.s</li>
-                <li class="breadcrumb-item" data-step="5">Générer les équipes</li>
+                <li class="breadcrumb-item" data-step="1">1. Introduction</li>
+                <li class="breadcrumb-item" data-step="2">2. Configuration des équipes</li>
+                <li class="breadcrumb-item" data-step="3">3. Import des joueur.euse.s</li>
+                <li class="breadcrumb-item" data-step="4">4. Liste des joueur.euse.s</li>
+                <li class="breadcrumb-item" data-step="5">5. Générer les équipes</li>
             </ol>
         </nav>
     </div>
@@ -37,7 +39,7 @@
     <div class="container">
 
         <div data-step="1" class="step d-none">
-            <h2>Générator d'équipes</h2>
+            <h2>Générateur d'équipes</h2>
             <p>Site dédié à la création d'équipes équilibrées par niveau pour le RSCM Volley-Ball.</p>
             <div class="row">
                 <div class="col col-auto">
@@ -83,7 +85,7 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Configurer</button>
+                <button type="submit" class="btn btn-primary px-5">Configurer</button>
             </form>
         </div>
 
@@ -97,36 +99,38 @@
                     <textarea name="players" rows="30" class="form-control"
                               placeholder="Axel Gaillard, L, 1 &#10;Basilo el Magnifico, L, 10" required></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Importer</button>
+                <button type="submit" class="btn btn-primary px-5">Importer</button>
             </form>
         </div>
 
         <div data-step="4" class="step d-none">
-            <h2>Liste des joueur.euse.s</h2>
-            <div id="errorsWrapper">
-                <div class="alert alert-danger">
-                    <div class="row">
-                        <div class="col">
-                            <h3>Joueur.euse.s en erreur</h3>
-                        </div>
-                    </div>
-
-                    <div id="errors_list"></div>
+            <div class="row justify-content-between">
+                <div class="col">
+                    <h2>Liste des joueur.euse.s</h2>
                 </div>
-            </div>
-            <div class="alert">
-                <div class="row justify-content-between">
-                    <div class="col">
-                        <h3>Joueur.euse.s validé.e.s</h3>
-                    </div>
+                <div class="col col-auto">
                     <div class="col col-auto">
                         <button id="resetPlayers" class="btn btn-danger text-white">Supprimer les joueur.euse.s</button>
                     </div>
                 </div>
-                <div id="players_list"></div>
             </div>
+            <div id="errorsWrapper" class="mt-2">
+                <h5>Invalides</h5>
+                <div id="errors_list"></div>
+            </div>
+            <div class="row mt-2">
+                <div class="col">
+                    <h5>Valides</h5>
+                </div>
+                <div class="col col-auto">
+                    <div class="col col-auto">
+                        <strong id="players_count"></strong>
+                    </div>
+                </div>
+            </div>
+            <div id="players_list"></div>
             <div class="text-center">
-                <button class="btn btn-md btn-warning px-5 text-white" id="btn-validate-players">
+                <button class="btn btn-md btn-primary px-5 text-white mt-4" id="btn-validate-players">
                     Valider les joueur.euse.s
                 </button>
             </div>
@@ -138,7 +142,7 @@
                 <div class="col">
 
                     <table id="table-stats" class="table table-bordered">
-                        <thead class="table-warning">
+                        <thead class="table-info">
                         <tr>
                             <th>
                                 Paramètres
@@ -174,6 +178,12 @@
         </div>
     </div>
 </section>
+
+<footer class="text-center bg-light py-2">
+    <small>
+        <a href="https://github.com/Sayannel" target="_blank" class="text-dark text-decoration-none">@Axel Gaillard</a>
+    </small>
+</footer>
 <!--JQUERY-->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
