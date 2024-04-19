@@ -18,8 +18,11 @@ section {
 #main-breadcrumb {
 
     .breadcrumb-item {
+        display: inline-block;
+        width: 100%;
         font-weight: 500;
         cursor: pointer;
+        padding-left: 0;
 
         &:hover {
             text-decoration: underline
@@ -31,11 +34,14 @@ section {
 
         &:before {
             font-weight: 400;
+            width: 0;
+            opacity: 0;
+            padding: 0;
         }
     }
 }
 
-#btn-generate-teams{
+#btn-generate-teams {
     font-weight: 500;
 }
 
@@ -43,17 +49,45 @@ section {
     tr td {
         width: 120px;
     }
+
     tr td:nth-child(1) {
         width: auto;
     }
 }
 
-#players_list table thead tr th {
-    background: #198754;
-    color: #fff;
+#players_list table {
+    thead tr th {
+        background: #198754;
+        color: #fff;
+    }
+
+    td[data-column-id="actions"] {
+        padding: 10px;
+
+        .btn {
+            min-width: 32px;
+        }
+    }
 }
 
 #errors_list table thead tr th {
     background: #dc3545;
     color: #fff;
+}
+
+
+@media screen and (min-width: 768px) {
+    #main-breadcrumb {
+        .breadcrumb-item {
+            display: list-item;
+            width: auto;
+            padding-left: 8px;
+
+            &:before {
+                width: auto;
+                opacity: 1;
+                padding: 0 5px 0 0;
+            }
+        }
+    }
 }

@@ -9,10 +9,8 @@ let errorsGrid;
 let teamGenerationTry = 0;
 const playerColumns = [
     {id: 'name', name: "Prénom Nom"},
-    {id: 'group', name: "Groupe"},
     {id: 'skill', name: "Niveau estimé"},
-    {id: 'status', name: "Status"},
-    {id: 'delete', width: '90px'}
+    {id: 'actions', width: '90px'}
 ]
 const errorsColumns = [
     {id: 'error', name: 'Erreur', width: '250px'},
@@ -58,7 +56,7 @@ const getPlayerData = (data) => {
 
     return {
         data,
-        name: playerData[0].trim(),
+        name: `${playerData[0].trim()} (${playerData[1].trim().toUpperCase()})`,
         group: playerData[1].trim().toUpperCase(),
         skill: parseInt(playerData[2].trim()),
         status: {
@@ -91,7 +89,7 @@ const checkPlayer = (player) => {
 
 const getPlayersData = (players) => players.map(
     (player) =>
-        [player.name, player.group, player.skill, '✅ validé.e']
+        [player.name, player.skill]
 )
 
 const removePlayerByIndex = (index) => {
@@ -104,7 +102,46 @@ const removePlayerByIndex = (index) => {
     for (let i = 0; i < savedPlayers.length; i++) {
         Cookies.set(`player-${i}`, JSON.stringify(savedPlayers[i]));
     }
-    updatePlayers()
+    updatePlayers();
+}
+
+const updatePlayerByIndex = (index) => {
+    delete savedPlayers[index];
+    const playerData = checkPlayer($('#update-player').val());
+    const currentData = savedPlayers[index];
+    if (playerData.status.valid) {
+        Cookies.set(`player-${index}`, JSON.stringify(playerData));
+        savedPlayers[index] = playerData;
+        updatePlayers();
+    } else {
+        savedPlayers[index] = currentData;
+        alert('Données incorrectes', playerData.status.reason);
+    }
+}
+
+const editPlayerByIndex = (index) => {
+    const row = $(`#players_list table tbody > tr:nth-child(${index + 1})`);
+    const nameCell = row.find('[data-column-id="name"]').html().split(' ');
+    const group = nameCell.splice(nameCell.length - 1, 1)[0].replace(/[^a-zA-Z]+/g, '');
+    const skill = parseInt(row.find('[data-column-id="skill"]').html());
+    const name = nameCell.join(' ');
+
+    row.find('[data-column-id="name"]').empty().attr('colspan', 2);
+    row.find('[data-column-id="skill"]').remove();
+    row.find('[data-column-id="name"]').append(`
+        <div class="row">
+            <div class="col">
+                <input type="text" id="update-player" class="form-control" value="${name}, ${group}, ${skill}" required>
+            </div>
+            <div class="col col-auto">
+                <button class="btn btn-sm btn-success text-white" onclick="updatePlayerByIndex(${index})">✔</button>
+            </div>
+        </div>
+    `)
+}
+
+const savePlayerByIndex = (index) => {
+
 }
 
 const updatePlayers = () => {
@@ -114,8 +151,11 @@ const updatePlayers = () => {
     }).forceRender();
 
     setTimeout(() => {
-        $('#players_list tbody [data-column-id="delete"]').each((index, element) => {
-            $(element).html(`<button class="btn btn-sm" onclick="removePlayerByIndex(${index})">❌</button>`)
+        $('#players_list tbody [data-column-id="actions"]').each((index, element) => {
+            $(element).html(`
+                <button class="btn btn-sm btn-primary text-white" onclick="editPlayerByIndex(${index})">✎</button>
+                <button class="btn btn-sm btn-danger text-white" onclick="removePlayerByIndex(${index})">×</button>
+            `)
         })
     }, 500);
 }
@@ -299,6 +339,7 @@ const generateTeams = () => {
                     </h4>
                     <div id="team-content-${teamGenerationTry}" class="accordion-collapse collapse show" data-bs-parent="#team-result-${teamGenerationTry}">
                         <div class="accordion-body">
+                            <div class="row"></div>
                         </div>
                     </div>
                 </div>
@@ -307,17 +348,19 @@ const generateTeams = () => {
 
     setTimeout(() => {
         for (const [number, team] of teams.entries()) {
-            $(`#team-result-${teamGenerationTry} .accordion-body`).append(`
-                <table class="table table-bordered team-table" id="team-${teamGenerationTry}-${number}">
-                    <thead class="table-${getTableColor(number)}">
-                        <tr>
-                            <th colspan="3">
-                                Équipe #${number + 1}
-                            </th>
-                        </tr>
-                        <tbody></tbody>
-                    </thead>
-                </table>
+            $(`#team-result-${teamGenerationTry} .accordion-body .row`).append(`
+                <div class="col col-12 col-md-6">
+                    <table class="table table-bordered team-table" id="team-${teamGenerationTry}-${number}">
+                        <thead class="table-${getTableColor(number)}">
+                            <tr>
+                                <th>
+                                    Équipe #${number + 1}
+                                </th>
+                            </tr>
+                            <tbody></tbody>
+                        </thead>
+                    </table>
+                </div>
             `);
         }
     })
@@ -327,8 +370,6 @@ const generateTeams = () => {
                 $(`#team-${teamGenerationTry}-${number} tbody`).append(`
                     <tr>
                         <td>${member.name}</td>
-                        <td>${member.group}</td>
-                        <td>${member.skill}</td>
                     </tr>
                 `);
             }
