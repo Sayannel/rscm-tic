@@ -50,15 +50,14 @@ const getPlayerData = (data) => {
     const playerData = data.split(',');
 
     // line format is not good
-    if (playerData.length !== 3) {
+    if (playerData.length !== 2) {
         return null;
     }
 
     return {
         data,
-        name: `${playerData[0].trim()} (${playerData[1].trim().toUpperCase()})`,
-        group: playerData[1].trim().toUpperCase(),
-        skill: parseInt(playerData[2].trim()),
+        name: playerData[0].trim(),
+        skill: parseInt(playerData[1].trim()),
         status: {
             valid: true,
             reason: undefined
@@ -73,9 +72,6 @@ const checkPlayer = (player) => {
     }
     if (playerData === null) {
         return null
-    } else if (!['C', 'L'].includes(playerData.group)) {
-        playerData.status.valid = false;
-        playerData.status.reason = 'groupe invalide';
     } else if (isNaN(playerData.skill) || playerData.skill < 1 || playerData.skill > parseInt($('[name="skill_range"]').val())) {
         playerData.status.valid = false;
         playerData.status.reason = 'niveau invalide';
@@ -122,7 +118,6 @@ const updatePlayerByIndex = (index) => {
 const editPlayerByIndex = (index) => {
     const row = $(`#players_list table tbody > tr:nth-child(${index + 1})`);
     const nameCell = row.find('[data-column-id="name"]').html().split(' ');
-    const group = nameCell.splice(nameCell.length - 1, 1)[0].replace(/[^a-zA-Z]+/g, '');
     const skill = parseInt(row.find('[data-column-id="skill"]').html());
     const name = nameCell.join(' ');
 
@@ -131,7 +126,7 @@ const editPlayerByIndex = (index) => {
     row.find('[data-column-id="name"]').append(`
         <div class="row">
             <div class="col">
-                <input type="text" id="update-player" class="form-control" value="${name}, ${group}, ${skill}" required>
+                <input type="text" id="update-player" class="form-control" value="${name}, ${skill}" required>
             </div>
             <div class="col col-auto">
                 <button class="btn btn-sm btn-success text-white" onclick="updatePlayerByIndex(${index})">✔</button>
