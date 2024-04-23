@@ -47,7 +47,8 @@ const getPlayerData = (data) => {
     if (data.trim().length === 0) {
         return undefined
     }
-    const playerData = data.split(',');
+
+    const playerData = data.split(data.indexOf(',') >= 0 ? ',' : '\t');
 
     // line format is not good
     if (playerData.length !== 2) {
