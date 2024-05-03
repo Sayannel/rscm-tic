@@ -7,9 +7,12 @@ let savedErrors = [];
 let playersGrid;
 let errorsGrid;
 let teamGenerationTry = 0;
+let bulkSelection = [];
 const playerColumns = [
-    {id: 'name', name: "Prénom Nom"},
-    {id: 'skill', name: "Niveau estimé"},
+    {id: 'bulk', width: '58px'},
+    {id: 'name', name: "Prénom Nom", sort: true},
+    {id: 'skill', name: "Niveau estimé", sort: true},
+    {id: 'gender', name: 'Genre', width: '150px', sort: true},
     {id: 'actions', width: '90px'}
 ]
 const errorsColumns = [
@@ -24,13 +27,12 @@ const setStep = (stepNumber) => {
     $('#main-breadcrumb .breadcrumb-item').removeClass(activeItemClasses);
     $(`#main-breadcrumb .breadcrumb-item:nth-child(${stepNumber})`).addClass(activeItemClasses);
 
-    if (stepNumber === 4) {
+    if (stepNumber === 3) {
         updatePlayers();
         updateErrors();
-        $('#players_count').html(`${savedPlayers.length} joueur.euse.s`);
     }
 
-    if (stepNumber === 5) {
+    if (stepNumber === 4) {
         generateStats();
     }
 }
@@ -51,12 +53,20 @@ const getPlayerData = (data) => {
     const playerData = data.split(data.indexOf(',') >= 0 ? ',' : '\t');
 
     // line format is not good
-    if (playerData.length !== 2) {
+    if (playerData.length !== 2 && playerData.length !== 3) {
         return null;
+    }
+
+    let gender = playerData.length === 3 ? playerData[2].toLowerCase().trim() : 'male';
+    if (gender === 'f') {
+        gender = 'female';
+    } else if (gender === 'n') {
+        gender = 'neutral';
     }
 
     return {
         data,
+        gender,
         name: playerData[0].trim(),
         skill: parseInt(playerData[1].trim()),
         status: {
@@ -84,21 +94,24 @@ const checkPlayer = (player) => {
     return playerData;
 }
 
+const getPlayerGenderSymbol = (gender) => {
+    switch (gender) {
+        case 'male':
+            return '♂';
+        case 'female':
+            return '♀';
+        default:
+            return '⚥';
+    }
+}
+
 const getPlayersData = (players) => players.map(
     (player) =>
-        [player.name, player.skill]
+        ['', player.name, player.skill, getPlayerGenderSymbol(player.gender)]
 )
 
 const removePlayerByIndex = (index) => {
-    const playersCount = parseInt(Cookies.get('players_count'));
-    for (let i = 0; i < playersCount; i++) {
-        Cookies.remove(`player-${i}`);
-    }
-    Cookies.set('players_count', parseInt(Cookies.get('players_count')) - 1);
     savedPlayers.splice(index, 1);
-    for (let i = 0; i < savedPlayers.length; i++) {
-        Cookies.set(`player-${i}`, JSON.stringify(savedPlayers[i]));
-    }
     updatePlayers();
 }
 
@@ -107,7 +120,6 @@ const updatePlayerByIndex = (index) => {
     const playerData = checkPlayer($('#update-player').val());
     const currentData = savedPlayers[index];
     if (playerData.status.valid) {
-        Cookies.set(`player-${index}`, JSON.stringify(playerData));
         savedPlayers[index] = playerData;
         updatePlayers();
     } else {
@@ -122,8 +134,9 @@ const editPlayerByIndex = (index) => {
     const skill = parseInt(row.find('[data-column-id="skill"]').html());
     const name = nameCell.join(' ');
 
-    row.find('[data-column-id="name"]').empty().attr('colspan', 2);
+    row.find('[data-column-id="name"]').empty().attr('colspan', 3);
     row.find('[data-column-id="skill"]').remove();
+    row.find('[data-column-id="gender"]').remove();
     row.find('[data-column-id="name"]').append(`
         <div class="row">
             <div class="col">
@@ -136,8 +149,26 @@ const editPlayerByIndex = (index) => {
     `)
 }
 
-const savePlayerByIndex = (index) => {
+const selectRow = (index) => {
+    $('#bulk-actions').removeClass('d-none');
+    if (bulkSelection.includes(index)) {
+        const indexToRemove = bulkSelection.indexOf(index);
+        if (indexToRemove !== -1) {
+            bulkSelection.splice(indexToRemove, 1);
+            if (bulkSelection.length === 0) {
+                resetBulk();
+            }
+        }
+    } else {
+        bulkSelection.push(index);
+    }
+}
 
+const resetBulk = () => {
+    bulkSelection = [];
+    $('#bulk-actions').addClass('d-none');
+    $('input[name="bulk[]"]').prop('checked', false);
+    $("#select-bulk-action").prop("selectedIndex", 0);
 }
 
 const updatePlayers = () => {
@@ -146,13 +177,49 @@ const updatePlayers = () => {
         data: getPlayersData(savedPlayers)
     }).forceRender();
 
+    // Update players count
+    $('#players_count').html(`${savedPlayers.length} joueur.euse.s`);
+
     setTimeout(() => {
+        // Add actions
         $('#players_list tbody [data-column-id="actions"]').each((index, element) => {
             $(element).html(`
                 <button class="btn btn-sm btn-primary text-white" onclick="editPlayerByIndex(${index})">✎</button>
                 <button class="btn btn-sm btn-danger text-white" onclick="removePlayerByIndex(${index})">×</button>
             `)
-        })
+        });
+
+
+        // Reset bulk
+        resetBulk();
+
+        // Add bulk
+        $('#players_list tbody [data-column-id="bulk"]').each((index, element) => {
+            $(element).html(`
+                <input type="checkbox" name="bulk[]" class="form-check-input" value="${index}" onChange="selectRow(${index})" />
+            `);
+        });
+
+        $('td[data-column-id="gender"]').removeClass('gender-f gender-m gender-n');
+        setTimeout(() => {
+            $('td[data-column-id="gender"]').each((index, element) => {
+                let genderClass = '';
+                switch ($(element).text()) {
+                    case '♂':
+                        genderClass = 'gender-male';
+                        break;
+                    case '♀':
+                        genderClass = 'gender-female';
+                        break;
+                    case '⚥':
+                    default:
+                        genderClass = 'gender-neutral';
+                        break;
+                }
+                $(element).removeClass('gender-male gender-female gender-neutral').addClass(genderClass);
+            } )
+        }, 100);
+
     }, 500);
 }
 
@@ -169,11 +236,6 @@ const updateErrors = () => {
 
 const addPlayers = (players) => {
     savedPlayers = [...savedPlayers, ...players];
-
-    for (let i = 0; i < savedPlayers.length; i++) {
-        Cookies.set(`player-${i}`, JSON.stringify(savedPlayers[i]));
-    }
-    Cookies.set('players_count', savedPlayers.length);
 }
 
 const importPlayers = (players) => {
@@ -215,57 +277,6 @@ const getFormValues = (fieldNames) => {
         values[name] = getFieldValue(name);
     }
     return values;
-}
-
-const removeSavedValues = (playerOnly = false) => {
-    const numberOfPlayers = parseInt(Cookies.get('players_count'));
-    for (let i = 0; i <= numberOfPlayers; i++) {
-        Cookies.remove(`player-${i}`);
-    }
-    Cookies.remove('players_count');
-    if (!playerOnly) {
-        for (const name of Object.keys(savedConfig)) {
-            Cookies.remove(name);
-            savedConfig[name] = undefined;
-            $(`[name="${name}"]`).val('');
-        }
-    }
-    loadSavedValues();
-}
-
-const loadSavedPlayers = () => {
-    const playersCount = Cookies.get('players_count');
-    if (playersCount === undefined) {
-        return []
-    } else {
-        const players = []
-        for (let i = 0; i < parseInt(playersCount); i++) {
-            players.push(
-                JSON.parse(Cookies.get(`player-${i}`))
-            );
-        }
-        savedPlayers = players
-        return players;
-    }
-}
-
-const loadSavedValues = () => {
-    updatePlayers();
-    for (const name of Object.keys(savedConfig)) {
-        if (Cookies.get(name) === undefined) {
-            return false
-        }
-        const value = Cookies.get(name);
-        savedConfig[name] = value;
-        $(`[name="${name}"]`).val(value);
-    }
-    return true
-}
-
-const saveValues = (values) => {
-    for (const value of Object.entries(values)) {
-        Cookies.set(value[0], value[1], {expires: 365});
-    }
 }
 
 const generateStats = () => {
@@ -321,51 +332,34 @@ const getTableColor = (number) => {
 
 
 const generateTeams = () => {
-    teamGenerationTry++;
+    $('#btn-generate-teams').attr('disabled', true);
     const teams = getTeams([...savedPlayers], savedConfig.players_per_team);
-    $('#teams').append(
-        $('<div class="accordion mb-4" />')
-            .attr('id', `team-result-${teamGenerationTry}`)
-            .html(`
-                <div class="team-result accordion-item">
-                    <h4 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#team-content-${teamGenerationTry}" aria-expanded="true" aria-controls="collapseOne">
-                         <strong>Génération #${teamGenerationTry}</strong>
-                        </button>
-                    </h4>
-                    <div id="team-content-${teamGenerationTry}" class="accordion-collapse collapse show" data-bs-parent="#team-result-${teamGenerationTry}">
-                        <div class="accordion-body">
-                            <div class="row"></div>
-                        </div>
-                    </div>
-                </div>
-            `)
-    );
 
-    setTimeout(() => {
-        for (const [number, team] of teams.entries()) {
-            $(`#team-result-${teamGenerationTry} .accordion-body .row`).append(`
-                <div class="col col-12 col-md-6">
-                    <table class="table table-bordered team-table" id="team-${teamGenerationTry}-${number}">
-                        <thead class="table-${getTableColor(number)}">
-                            <tr>
-                                <th>
-                                    Équipe #${number + 1}
-                                </th>
-                            </tr>
-                            <tbody></tbody>
-                        </thead>
-                    </table>
-                </div>
-            `);
-        }
-    })
+    for (const [number, team] of teams.entries()) {
+        $(`#teams`).append(`
+            <div class="col col-12 col-md-6 col-xl-4">
+                <table class="table table-bordered team-table" id="team-${teamGenerationTry}-${number}">
+                    <thead class="table-${getTableColor(number)}">
+                        <tr>
+                            <th colspan="3">
+                                Équipe #${number + 1}
+                            </th>
+                        </tr>
+                        <tbody></tbody>
+                    </thead>
+                </table>
+            </div>
+        `);
+    }
+
     setTimeout(() => {
         for (const [number, team] of teams.entries()) {
             for (const member of team) {
                 $(`#team-${teamGenerationTry}-${number} tbody`).append(`
                     <tr>
+                        <td class="gender-${member.gender}">${getPlayerGenderSymbol(member.gender)}</td>
                         <td>${member.name}</td>
+                        <td>${member.skill}</td>
                     </tr>
                 `);
             }
@@ -376,29 +370,13 @@ const generateTeams = () => {
 $(document).ready(() => {
     setStep(1);
 
-    $('#resetPlayers').on('click', () => {
-        savedPlayers = [];
-        removeSavedValues(true);
-        setStep(3);
-    })
-
     $('#btn-generate-teams').on('click', () => {
         $('#teams .accordion-collapse').removeClass('show');
         generateTeams();
     });
 
     $('#btn-validate-players').on('click', () => {
-        setStep(5);
-    });
-
-    $('#btn-launch-continue').on('click', () => {
-        const hasValues = loadSavedValues();
-        setStep(hasValues ? 3 : 2);
-    });
-
-    $('#btn-launch-new').on('click', () => {
-        removeSavedValues();
-        setStep(2);
+        setStep(4);
     });
 
     $('#import').on('submit', (event) => {
@@ -406,7 +384,7 @@ $(document).ready(() => {
         resetErrors();
         const values = getFormValues(['players']);
         importPlayers(values.players.split('\n'));
-        setStep(4);
+        setStep(3);
     });
 
     $('#setup').on('submit', (event) => {
@@ -414,17 +392,33 @@ $(document).ready(() => {
         const values = getFormValues(['players_per_team', 'skill_range']);
         savedConfig.players_per_team = values.players_per_team;
         savedConfig.skill_range = values.skill_range;
-
-        saveValues(values);
-        setStep(3);
+        setStep(2);
     });
 
     $('#main-breadcrumb .breadcrumb-item').on('click', (event) => {
         setStep(parseInt($(event.currentTarget).attr('data-step')));
     });
 
+    $('#btn-bulk-apply').on('click', (event) => {
+        const action = $('#select-bulk-action').val();
+        for (const index of bulkSelection.sort((a, b) => b - a)) {
+            if (action === 'delete') {
+                removePlayerByIndex(index);
+            } else {
+                savedPlayers[index] = {...savedPlayers[index], gender: action};
+            }
+        }
+
+        setTimeout(() => {
+            resetBulk();
+            if (action !== 'delete') {
+                updatePlayers();
+            }
+        }, 500)
+    })
+
     playersGrid = new gridjs.Grid({
-        data: getPlayersData(loadSavedPlayers()),
+        data: getPlayersData([]),
         columns: playerColumns,
     }).render(document.getElementById("players_list"));
 
@@ -432,8 +426,4 @@ $(document).ready(() => {
         data: [],
         columns: errorsColumns,
     }).render(document.getElementById("errors_list"));
-
-    setTimeout(() => {
-        loadSavedValues();
-    }, 500);
 });

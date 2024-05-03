@@ -3,6 +3,9 @@ body {
     font-style: normal;
 }
 
+h1 {
+    font-weight: 600;
+}
 h2 {
     font-weight: 700;
 }
@@ -41,8 +44,24 @@ section {
     }
 }
 
+.gender-female {
+    color: lightcoral !important;
+}
+.gender-male {
+    color: cornflowerblue !important;
+}
+.gender-neutral {
+    color: forestgreen !important;
+}
+
 #btn-generate-teams {
     font-weight: 500;
+}
+
+td[data-column-id="bulk"], td[data-column-id="gender"] {
+    font-family: arial unicode ms,lucida sans unicode,sans-serif;
+    font-weight: 600;
+    text-align: center;
 }
 
 .team-table tbody {
@@ -50,8 +69,15 @@ section {
         width: 120px;
     }
 
-    tr td:nth-child(1) {
-        width: auto;
+    tr td:first-child {
+        font-family: arial unicode ms,lucida sans unicode,sans-serif;
+        width: 30px;
+        text-align: center;
+    }
+
+    tr td:last-child {
+        width: 20px;
+        text-align: center;
     }
 }
 
