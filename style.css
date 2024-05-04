@@ -65,18 +65,17 @@ td[data-column-id="bulk"], td[data-column-id="gender"] {
 }
 
 .team-table tbody {
-    tr td {
-        width: 120px;
+    td {
+        vertical-align: middle;
     }
-
     tr td:first-child {
         font-family: arial unicode ms,lucida sans unicode,sans-serif;
-        width: 30px;
+        width: 40px;
         text-align: center;
     }
 
-    tr td:last-child {
-        width: 20px;
+    tr td:nth-child(3), td:nth-child(4) {
+        width: 40px;
         text-align: center;
     }
 }

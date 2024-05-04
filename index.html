@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>RSCM - TIC team generator</title>
-    <!--BOOTSTRAP-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
@@ -34,7 +33,8 @@
                 <li class="breadcrumb-item" data-step="1">1. Configuration</li>
                 <li class="breadcrumb-item" data-step="2">2. Import des joueur.euse.s</li>
                 <li class="breadcrumb-item" data-step="3">3. Liste des joueur.euse.s</li>
-                <li class="breadcrumb-item" data-step="4">4. Générer les équipes</li>
+                <li class="breadcrumb-item" data-step="4">4. Génération des équipes</li>
+                <li class="breadcrumb-item" data-step="5">5. Export des équipes</li>
             </ol>
         </nav>
     </div>
@@ -132,43 +132,51 @@
 
         <div data-step="4" class="step d-none">
             <h2>Générer des équipes</h2>
-            <div class="row">
-                <div class="col">
+            <table id="table-stats" class="table table-bordered">
+                <thead class="table-info">
+                <tr>
+                    <th colspan="2">
+                        Paramètres
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Nombre total de joueur.euse.s importé.e.s</td>
+                    <td data-stat="players-totalNumber"></td>
+                </tr>
+                <tr>
+                    <td>Nombre de joueur.euse.s par équipe</td>
+                    <td data-stat="config-teamCount"></td>
+                </tr>
+                <tr>
+                    <td>Niveau maximal par joueur.euse.s</td>
+                    <td data-stat="config-maxSkill"></td>
+                </tr>
+                </tbody>
+            </table>
 
-                    <table id="table-stats" class="table table-bordered">
-                        <thead class="table-info">
-                        <tr>
-                            <th>
-                                Paramètres
-                            </th>
-                            <th>
-                                Valeur
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td>Nombre total de joueur.euse.s importé.e.s</td>
-                            <td data-stat="players-totalNumber"></td>
-                        </tr>
-                        <tr>
-                            <td>Nombre de joueur.euse.s par équipe</td>
-                            <td data-stat="config-teamCount"></td>
-                        </tr>
-                        <tr>
-                            <td>Niveau maximal par joueur.euse.s</td>
-                            <td data-stat="config-maxSkill"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <h3>Chapeaux</h3>
+            <div id="hats-container" class="row"></div>
+
             <div class="text-center py-4">
-                <button class="btn btn-md btn-warning px-5 text-white" id="btn-generate-teams">
+                <button class="btn btn-md btn-primary px-5 text-white" id="btn-generate-teams">
                     Générer des équipes
                 </button>
             </div>
+
+            <h3 id="teams-title" class="d-none">Équipes</h3>
             <div id="teams" class="row mt-3"></div>
+
+            <div class="text-center">
+                <button class="btn btn-md btn-success px-5 text-white d-none" id="btn-export-teams">
+                    Exporter les équipes
+                </button>
+            </div>
+        </div>
+
+        <div data-step="5" class="step d-none">
+            <div id="export-teams" class="row"></div>
         </div>
     </div>
 </section>
@@ -178,26 +186,20 @@
         <a href="https://github.com/Sayannel" target="_blank" class="text-dark text-decoration-none">@Axel Gaillard</a>
     </small>
 </footer>
-<!--JQUERY-->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<!--BOOTSTRAP-->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-<!--COOKIES-->
 <script src="
 https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js
 "></script>
-<!--GOOGLE FONTS-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
       rel="stylesheet">
-<!--GRID JS -->
 <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet"/>
-<!--SCRIPT-->
 <script src="index.js"></script>
 </body>
 </html>

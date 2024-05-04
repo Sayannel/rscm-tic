@@ -4,10 +4,11 @@ const savedConfig = {
 };
 let savedPlayers = [];
 let savedErrors = [];
+let savedTeams = [];
 let playersGrid;
 let errorsGrid;
-let teamGenerationTry = 0;
 let bulkSelection = [];
+let trade = [];
 const playerColumns = [
     {id: 'bulk', width: '58px'},
     {id: 'name', name: "Prénom Nom", sort: true},
@@ -34,6 +35,34 @@ const setStep = (stepNumber) => {
 
     if (stepNumber === 4) {
         generateStats();
+        generateHats();
+    }
+
+    if (stepNumber === 5) {
+        exportTeams()
+    }
+}
+
+const exportTeams = () => {
+    let teamNumber = 1;
+    for (const team of savedTeams) {
+        let members = '';
+        for (const member of team) {
+            members+= `<tr><td>${member.name}</td></tr>`;
+        }
+        $('#export-teams').append(`
+            <div class="col col-md-4">
+                <table class="table table-bordered">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Équipe ${teamNumber}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${members}</tbody>
+                </table>
+            </div>
+        `);
+        teamNumber ++;
     }
 }
 
@@ -217,7 +246,7 @@ const updatePlayers = () => {
                         break;
                 }
                 $(element).removeClass('gender-male gender-female gender-neutral').addClass(genderClass);
-            } )
+            })
         }, 100);
 
     }, 500);
@@ -279,6 +308,29 @@ const getFormValues = (fieldNames) => {
     return values;
 }
 
+const generateHats = () => {
+    for (let hat = 1; hat <= savedConfig.skill_range; hat++) {
+        let hatPlayers = '';
+        for (const player of savedPlayers.filter((player) => player.skill === hat)) {
+            hatPlayers += `<tr><td>${player.name}</td></tr>`;
+        }
+        $('#hats-container').append(`
+            <div class="col col-md-3">
+                <table id="table-hat-${hat}" class="table table-bordered">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Chapeau #${hat}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${hatPlayers}
+                    </tbody>
+                </table>
+            </div>
+        `);
+    }
+}
+
 const generateStats = () => {
     $('#table-stats [data-stat="players-totalNumber"]').html(savedPlayers.length);
     $('#table-stats [data-stat="config-teamCount"]').html(savedConfig.players_per_team);
@@ -332,16 +384,57 @@ const getTableColor = (number) => {
 
 
 const generateTeams = () => {
-    $('#btn-generate-teams').attr('disabled', true);
-    const teams = getTeams([...savedPlayers], savedConfig.players_per_team);
+    $('#btn-generate-teams').remove();
+    $('#btn-export-teams, #teams-title').removeClass('d-none');
+    savedTeams = getTeams([...savedPlayers], savedConfig.players_per_team);
 
-    for (const [number, team] of teams.entries()) {
+    displayTeams();
+}
+
+const getPlayerIndexesByName = (playerNames) => {
+    const indexes = [];
+    for (const playerName of playerNames) {
+        savedTeams.map((team, teamIndex) => {
+            team.map((player, playerIndex) => {
+                if (player.name === playerName) {
+                    indexes.push([teamIndex, playerIndex]);
+                }
+            })
+        })
+    }
+    return indexes
+}
+
+const addForTrade = (member, teamNumber, memberNumber) => {
+    $(`#team-${teamNumber}-${memberNumber} td`).addClass('bg-secondary text-white');
+    trade.push(member);
+
+    if (trade.length === 2) {
+        setTimeout(() => {
+            // Change teams
+            const playerTradeIndexes = getPlayerIndexesByName(trade)
+            const playerToTrade = savedTeams[playerTradeIndexes[0][0]][playerTradeIndexes[0][1]];
+            savedTeams[playerTradeIndexes[0][0]][playerTradeIndexes[0][1]] = savedTeams[playerTradeIndexes[1][0]][playerTradeIndexes[1][1]];
+            savedTeams[playerTradeIndexes[1][0]][playerTradeIndexes[1][1]] = playerToTrade;
+            // Update teams display
+            displayTeams()
+            // Clear trade
+            trade = [];
+        }, 200)
+    }
+}
+
+const displayTeams = () => {
+    // Reset team container
+    $(`#teams`).html('');
+    // Append teams
+    for (const [number] of savedTeams.entries()) {
         $(`#teams`).append(`
             <div class="col col-12 col-md-6 col-xl-4">
-                <table class="table table-bordered team-table" id="team-${teamGenerationTry}-${number}">
+                <table class="table table-bordered team-table" id="team-${number}">
                     <thead class="table-${getTableColor(number)}">
                         <tr>
-                            <th colspan="3">
+                            <th colspan="4">
                                 Équipe #${number + 1}
                             </th>
                         </tr>
@@ -353,19 +446,23 @@ const generateTeams = () => {
     }
 
     setTimeout(() => {
-        for (const [number, team] of teams.entries()) {
+        for (const [teamNumber, team] of savedTeams.entries()) {
+            let memberNumber = 0;
             for (const member of team) {
-                $(`#team-${teamGenerationTry}-${number} tbody`).append(`
-                    <tr>
+                $(`#team-${teamNumber} tbody`).append(`
+                    <tr id="team-${teamNumber}-${memberNumber}">
                         <td class="gender-${member.gender}">${getPlayerGenderSymbol(member.gender)}</td>
                         <td>${member.name}</td>
                         <td>${member.skill}</td>
+                        <td><button class="btn btn-sm btn-outline-secondary" onclick="addForTrade('${member.name}', ${teamNumber}, ${memberNumber});">⇆</button></td>
                     </tr>
                 `);
+                memberNumber++;
             }
         }
-    })
+    });
 }
+
 
 $(document).ready(() => {
     setStep(1);
@@ -399,7 +496,7 @@ $(document).ready(() => {
         setStep(parseInt($(event.currentTarget).attr('data-step')));
     });
 
-    $('#btn-bulk-apply').on('click', (event) => {
+    $('#btn-bulk-apply').on('click', () => {
         const action = $('#select-bulk-action').val();
         for (const index of bulkSelection.sort((a, b) => b - a)) {
             if (action === 'delete') {
@@ -415,7 +512,11 @@ $(document).ready(() => {
                 updatePlayers();
             }
         }, 500)
-    })
+    });
+
+    $('#btn-export-teams').on('click', () => {
+       setStep(5);
+    });
 
     playersGrid = new gridjs.Grid({
         data: getPlayersData([]),
