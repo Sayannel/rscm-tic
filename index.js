@@ -1,6 +1,5 @@
 const savedConfig = {
-    players_per_team: undefined,
-    skill_range: undefined,
+    players_per_team: undefined, skill_range: undefined,
 };
 let savedPlayers = [];
 let savedErrors = [];
@@ -9,17 +8,10 @@ let playersGrid;
 let errorsGrid;
 let bulkSelection = [];
 let trade = [];
-const playerColumns = [
-    {id: 'bulk', width: '58px'},
-    {id: 'name', name: "Prénom Nom", sort: true},
-    {id: 'skill', name: "Niveau estimé", sort: true},
-    {id: 'gender', name: 'Genre', width: '150px', sort: true},
-    {id: 'actions', width: '90px'}
-]
-const errorsColumns = [
-    {id: 'error', name: 'Erreur', width: '250px'},
-    {id: 'data', name: 'Donnée'},
-]
+const playerColumns = [{id: 'bulk', width: '58px'}, {id: 'name', name: "Prénom Nom", sort: true}, {
+    id: 'skill', name: "Niveau estimé", sort: true
+}, {id: 'gender', name: 'Genre', width: '150px', sort: true}, {id: 'actions', width: '90px'}]
+const errorsColumns = [{id: 'error', name: 'Erreur', width: '250px'}, {id: 'data', name: 'Donnée'},]
 
 const setStep = (stepNumber) => {
     const activeItemClasses = 'active text-primary';
@@ -48,7 +40,7 @@ const exportTeams = () => {
     for (const team of savedTeams) {
         let members = '';
         for (const member of team) {
-            members+= `<tr><td>${member.name}</td></tr>`;
+            members += `<tr><td>${member.name}</td></tr>`;
         }
         $('#export-teams').append(`
             <div class="col col-md-4">
@@ -62,7 +54,7 @@ const exportTeams = () => {
                 </table>
             </div>
         `);
-        teamNumber ++;
+        teamNumber++;
     }
 }
 
@@ -89,18 +81,11 @@ const getPlayerData = (data) => {
     let gender = playerData.length === 3 ? playerData[2].toLowerCase().trim() : 'male';
     if (gender === 'f') {
         gender = 'female';
-    } else if (gender === 'n') {
-        gender = 'neutral';
     }
 
     return {
-        data,
-        gender,
-        name: playerData[0].trim(),
-        skill: parseInt(playerData[1].trim()),
-        status: {
-            valid: true,
-            reason: undefined
+        data, gender, name: playerData[0].trim(), skill: parseInt(playerData[1].trim()), status: {
+            valid: true, reason: undefined
         }
     }
 }
@@ -134,10 +119,7 @@ const getPlayerGenderSymbol = (gender) => {
     }
 }
 
-const getPlayersData = (players) => players.map(
-    (player) =>
-        ['', player.name, player.skill, getPlayerGenderSymbol(player.gender)]
-)
+const getPlayersData = (players) => players.map((player) => ['', player.name, player.skill, getPlayerGenderSymbol(player.gender)])
 
 const removePlayerByIndex = (index) => {
     savedPlayers.splice(index, 1);
@@ -218,7 +200,6 @@ const updatePlayers = () => {
             `)
         });
 
-
         // Reset bulk
         resetBulk();
 
@@ -229,23 +210,21 @@ const updatePlayers = () => {
             `);
         });
 
-        $('td[data-column-id="gender"]').removeClass('gender-f gender-m gender-n');
+        $('td[data-column-id="gender"]').removeClass('gender-f gender-m gender-n²');
         setTimeout(() => {
             $('td[data-column-id="gender"]').each((index, element) => {
                 let genderClass = '';
                 switch ($(element).text()) {
-                    case '♂':
-                        genderClass = 'gender-male';
-                        break;
+
                     case '♀':
                         genderClass = 'gender-female';
                         break;
-                    case '⚥':
+                    case '♂':
                     default:
-                        genderClass = 'gender-neutral';
+                        genderClass = 'gender-male';
                         break;
                 }
-                $(element).removeClass('gender-male gender-female gender-neutral').addClass(genderClass);
+                $(element).removeClass('gender-male gender-female').addClass(genderClass);
             })
         }, 100);
 
@@ -309,6 +288,7 @@ const getFormValues = (fieldNames) => {
 }
 
 const generateHats = () => {
+    $('#hats-container').html('');
     for (let hat = 1; hat <= savedConfig.skill_range; hat++) {
         let hatPlayers = '';
         for (const player of savedPlayers.filter((player) => player.skill === hat)) {
@@ -382,11 +362,42 @@ const getTableColor = (number) => {
     return 'danger';
 };
 
+const checkTeams = (teams) => {
+    const genderRepartition = {};
+    for (const gender of ['male', 'female']) {
+        genderRepartition[gender] = teams.flat().filter((player) => player.gender === gender).length
+    }
+    const leastRepresentedGender = genderRepartition.male > genderRepartition.female ? 'female' : 'male';
+    const maxOfLeastGenderPerTeam = Math.ceil(genderRepartition[leastRepresentedGender] / teams.length)
+    let check = true;
+    let loopNumber = 0;
+    while (check && loopNumber < teams.length) {
+        const numberOfLeastRepresentedGender = teams[loopNumber].filter((player) => player.gender === leastRepresentedGender).length
+        if (numberOfLeastRepresentedGender > maxOfLeastGenderPerTeam || numberOfLeastRepresentedGender < maxOfLeastGenderPerTeam - 1) {
+            check = false
+        }
+        loopNumber++;
+    }
+
+    return check;
+}
 
 const generateTeams = () => {
-    $('#btn-generate-teams').remove();
+    // $('#btn-generate-teams').remove();
     $('#btn-export-teams, #teams-title').removeClass('d-none');
-    savedTeams = getTeams([...savedPlayers], savedConfig.players_per_team);
+
+    const maxIterations = 1000;
+    let loopNumber = 0;
+    let teamsTry;
+    let areTeamsValid = false;
+    while (loopNumber < maxIterations && !areTeamsValid) {
+        teamsTry = getTeams([...savedPlayers], savedConfig.players_per_team);
+        areTeamsValid = checkTeams(teamsTry);
+        if (areTeamsValid) {
+            savedTeams = teamsTry;
+        }
+        loopNumber++;
+    }
 
     displayTeams();
 }
@@ -463,7 +474,6 @@ const displayTeams = () => {
     });
 }
 
-
 $(document).ready(() => {
     setStep(1);
 
@@ -515,16 +525,14 @@ $(document).ready(() => {
     });
 
     $('#btn-export-teams').on('click', () => {
-       setStep(5);
+        setStep(5);
     });
 
     playersGrid = new gridjs.Grid({
-        data: getPlayersData([]),
-        columns: playerColumns,
+        data: getPlayersData([]), columns: playerColumns,
     }).render(document.getElementById("players_list"));
 
     errorsGrid = new gridjs.Grid({
-        data: [],
-        columns: errorsColumns,
+        data: [], columns: errorsColumns,
     }).render(document.getElementById("errors_list"));
 });

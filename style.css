@@ -50,9 +50,6 @@ section {
 .gender-male {
     color: cornflowerblue !important;
 }
-.gender-neutral {
-    color: forestgreen !important;
-}
 
 #btn-generate-teams {
     font-weight: 500;
