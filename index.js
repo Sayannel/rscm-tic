@@ -383,7 +383,6 @@ const checkTeams = (teams) => {
 }
 
 const generateTeams = () => {
-    // $('#btn-generate-teams').remove();
     $('#btn-export-teams, #teams-title').removeClass('d-none');
 
     const maxIterations = 1000;
@@ -399,6 +398,10 @@ const generateTeams = () => {
         loopNumber++;
     }
 
+    if (!areTeamsValid) {
+        alert('PARITÉ IMPOSSIBLE');
+        savedTeams = getTeams([...savedPlayers], savedConfig.players_per_team);
+    }
     displayTeams();
 }
 
