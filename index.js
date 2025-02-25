@@ -81,6 +81,8 @@ const getPlayerData = (data) => {
     let gender = playerData.length === 3 ? playerData[2].toLowerCase().trim() : 'male';
     if (gender === 'f') {
         gender = 'female';
+    } else {
+        gender = 'male'
     }
 
     return {
@@ -92,6 +94,7 @@ const getPlayerData = (data) => {
 
 const checkPlayer = (player) => {
     const playerData = getPlayerData(player);
+    console.log('playerData', playerData)
     if (playerData === undefined) {
         return
     }
@@ -247,6 +250,7 @@ const addPlayers = (players) => {
 }
 
 const importPlayers = (players) => {
+    console.log('players', players)
     const newPlayers = [];
     for (const player of players) {
         const playerFormatted = checkPlayer(player);
@@ -369,6 +373,10 @@ const checkTeams = (teams) => {
     }
     const leastRepresentedGender = genderRepartition.male > genderRepartition.female ? 'female' : 'male';
     const maxOfLeastGenderPerTeam = Math.ceil(genderRepartition[leastRepresentedGender] / teams.length)
+
+    console.log('leastRepresentedGender', leastRepresentedGender)
+    console.log('maxOfLeastGenderPerTeam', maxOfLeastGenderPerTeam)
+
     let check = true;
     let loopNumber = 0;
     while (check && loopNumber < teams.length) {
